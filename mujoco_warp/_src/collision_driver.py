@@ -818,7 +818,7 @@ def nxn_broadphase(
   # since pass 1. A wake is exactly a body whose state changed between awake_prev and body_awake
   # (nothing sleeps between the passes), so the condition is derived here rather than threaded in.
   cond = None
-  if incremental and m.opt.graph_conditional:
+  if incremental and m.opt.graph_conditional and wp.is_conditional_graph_supported():
     cond = wp.zeros(1, dtype=int)
     wp.launch(_any_awake_changed, dim=(d.nworld, m.nbody), inputs=[d.body_awake, awake_prev], outputs=[cond])
 

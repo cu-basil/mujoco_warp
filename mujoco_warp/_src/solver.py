@@ -3664,7 +3664,7 @@ def _solve(m: types.Model, d: types.Data, ctx: SolverContext, compact: bool = Fa
     )
 
   nsolving = wp.full(shape=(1,), value=d.nworld, dtype=int)
-  if m.opt.iterations != 0 and m.opt.graph_conditional:
+  if m.opt.iterations != 0 and m.opt.graph_conditional and wp.is_conditional_graph_supported():
     # Note: the iteration kernel (indicated by while_body) is repeatedly launched
     # as long as condition_iteration is not zero.
     # condition_iteration is a warp array of size 1 and type int, it counts the number
