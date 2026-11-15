@@ -1153,8 +1153,9 @@ def _narrowphase(m: Model, d: Data, ctx: CollisionContext):
 
 def _sort_contacts(m: Model, d: Data):
   """Deterministic contact sort."""
-  # TODO(team): Implementation contact sorting.
-  pass
+  from mujoco_warp._src import sort
+
+  sort.contacts(d)
 
 
 @event_scope
