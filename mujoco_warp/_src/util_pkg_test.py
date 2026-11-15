@@ -16,8 +16,11 @@
 """Tests for package version utilities."""
 
 import importlib.metadata
+import subprocess
+import sys
 from unittest import mock
 
+import warp as wp
 from absl.testing import absltest
 from absl.testing import parameterized
 
@@ -103,6 +106,41 @@ class CheckVersionTest(parameterized.TestCase):
       self.assertTrue(util_pkg.check_version("pkg>=1.5.0"))
       self.assertFalse(util_pkg.check_version("pkg>=3.0.0"))
 
+  @parameterized.parameters(
+    ("mujoco", "mujoco-core"),
+    ("mujoco-core", "mujoco"),
+  )
+  def test_check_version_mujoco_dist_alias(self, package, installed_dist):
+    """Test that mujoco and mujoco-core resolve to whichever distribution is installed."""
+
+    def version(name):
+      if name != installed_dist:
+        raise importlib.metadata.PackageNotFoundError(name)
+      return "4.0.1.dev100"
+
+    fake_module = mock.MagicMock()
+    fake_module.__version__ = "4.0.1"  # mujoco.__version__ has no dev suffix
+    with (
+      mock.patch("importlib.metadata.version", side_effect=version),
+      mock.patch("importlib.import_module", return_value=fake_module),
+    ):
+      self.assertTrue(util_pkg.check_version(f"{package}>=4.0.1.dev100"))
+      self.assertFalse(util_pkg.check_version(f"{package}>=4.0.1.dev200"))
+
+  def test_check_version_mujoco_core_fallback_module(self):
+    """Test that the __version__ fallback for mujoco-core imports the mujoco module."""
+    fake_module = mock.MagicMock()
+    fake_module.__version__ = "4.0.1"
+    with (
+      mock.patch(
+        "importlib.metadata.version",
+        side_effect=importlib.metadata.PackageNotFoundError("mujoco-core"),
+      ),
+      mock.patch("importlib.import_module", return_value=fake_module) as import_module,
+    ):
+      self.assertTrue(util_pkg.check_version("mujoco-core>=4.0.0"))
+      import_module.assert_called_once_with("mujoco")
+
   def test_check_version_package_not_found(self):
     """Test that PackageNotFoundError is raised when both lookups fail."""
     with (
@@ -114,6 +152,20 @@ class CheckVersionTest(parameterized.TestCase):
     ):
       with self.assertRaises(importlib.metadata.PackageNotFoundError):
         util_pkg.check_version("nonexistent>=1.0.0")
+
+
+class ImportTest(absltest.TestCase):
+  def test_import_does_not_init_warp(self):
+    if sys.executable:
+      subprocess.run(
+        [sys.executable, "-c", "import mujoco_warp, warp as wp; assert wp._src.context.runtime is None"],
+        check=True,
+      )
+    else:
+      import mujoco_warp
+
+      self.assertIsNotNone(mujoco_warp)
+      self.assertIsNone(wp._src.context.runtime)
 
 
 if __name__ == "__main__":

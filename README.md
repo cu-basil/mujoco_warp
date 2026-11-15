@@ -28,6 +28,12 @@ MJWarp is also available via PyPI:
 pip install mujoco-warp
 ```
 
+MJWarp depends only on the core MuJoCo bindings (`mujoco-core`). The `mjwarp-viewer` and `mjwarp-record` tools need the `viewer` extra:
+
+```bash
+pip install "mujoco-warp[viewer]"
+```
+
 # Examples
 
 MuJoCo Warp simulates many kinds of physical systems, from rigid bodies with contacts to soft bodies, cloth, signed distance fields, and more. Here are a few examples of what it can do:
@@ -118,7 +124,7 @@ If you prefer [PyTorch](https://pytorch.org/) for research, consider one of thes
 MuJoCo Warp supports the same features as MuJoCo with the following exceptions:
 
 - **Integrator**: `IMPLICITFAST` midpoint integrator feature is not supported
-- **Solver**: `PGS` and `noslip` not yet supported
+- **Solver**: `PGS` not yet supported (`noslip` not supported with `discrete` integrator)
 - **Actuator / Sensors**: `PLUGIN` types not yet supported
 - **Flex**: experimental — not all features are implemented or optimized yet
 
