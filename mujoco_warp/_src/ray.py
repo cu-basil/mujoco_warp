@@ -720,19 +720,13 @@ def ray_mesh_with_bvh(
   lpnt, lvec = _ray_map(pos, mat, pnt, vec)
   mesh_bvh = mesh_bvh_id[mesh_geom_id]
 
-  # Culling drops back-facing triangles, not the mesh: like a rasterizer, march
-  # past culled hits to the next surface (bounded to keep the kernel in check).
-  offset = float(0.0)
-  for _ in range(8):
-    hit = wp.mesh_query_ray(mesh_bvh, lpnt + lvec * offset, lvec, max_t - offset, t, u, v, sign, n, f)
-    if not hit:
-      return -1.0, wp.vec3(0.0, 0.0, 0.0), 0.0, 0.0, -1, -1
-    if (not cull_backfaces) or wp.dot(lvec, n) < 0.0:
-      normal = mat @ n
-      normal = wp.normalize(normal)
-      return offset + t, normal, u, v, f, mesh_geom_id
-    offset += t * (1.0 + RAY_TOL_REL) + RAY_TOL_ABS
-
+  hit = wp.mesh_query_ray(mesh_bvh, lpnt, lvec, max_t, t, u, v, sign, n, f)
+  if not hit:
+    return -1.0, wp.vec3(0.0, 0.0, 0.0), 0.0, 0.0, -1, -1
+  if (not cull_backfaces) or wp.dot(lvec, n) < 0.0:
+    normal = mat @ n
+    normal = wp.normalize(normal)
+    return t, normal, u, v, f, mesh_geom_id
   return -1.0, wp.vec3(0.0, 0.0, 0.0), 0.0, 0.0, -1, -1
 
 

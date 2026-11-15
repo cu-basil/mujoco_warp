@@ -181,7 +181,7 @@ def _texture_plane(
 ) -> Tuple[wp.vec2, wp.vec2, wp.vec2]:
   # Evaluate X and Y independently to support mixed finite/infinite planes
   # (render_context.c lines 211 & 219)
-  u = 0.5 * local[0]
+  u = local[0]
   rep_u = repeat[0]
   if size[0] > 0.0:
     s0 = wp.max(size[0], 1e-6)
@@ -189,7 +189,7 @@ def _texture_plane(
     if tex_uniform:
       rep_u = repeat[0] * size[0]
 
-  v = -0.5 * local[1]
+  v = local[1]
   rep_v = repeat[1]
   if size[1] > 0.0:
     s1 = wp.max(size[1], 1e-6)
@@ -197,7 +197,7 @@ def _texture_plane(
     if tex_uniform:
       rep_v = repeat[1] * size[1]
 
-  off = -0.5 if (size[0] <= 0.0 or size[1] <= 0.0) else 0.0
+  off = 0.0
   return wp.vec2(u, v), wp.vec2(off, off), wp.vec2(rep_u, rep_v)
 
 
